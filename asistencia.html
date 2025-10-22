@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Asistencia</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        canvas { border:1px solid #000; display:block; margin:10px 0; touch-action:none; }
+    </style>
+</head>
+<body>
+<h1>Registro de Asistencia</h1>
+
+<form id="asistenciaForm">
+    <input type="hidden" id="sessionId">
+    <input type="hidden" id="exp">
+    <input type="text" id="nombre" placeholder="Nombre" required><br>
+    <input type="email" id="correo" placeholder="Correo" required><br>
+    <input type="text" id="empresa" placeholder="Empresa" required><br>
+    <input type="tel" id="telefono" placeholder="Teléfono" required><br>
+
+    <p>Firma:</p>
+    <canvas id="firma" width="300" height="150"></canvas>
+    <button type="button" id="limpiarFirma">Limpiar Firma</button><br>
+
+    <button type="submit">Enviar Asistencia</button>
+</form>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.28.0/dist/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generador de QR</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Generador de QR de Reunión</h1>
+<label>Duración del QR (minutos):</label>
+<input type="number" id="qrDuracion" value="15" min="1" max="120">
+<button id="generarQR">Generar QR</button>
+<div id="qr"></div>
+
+<script src="qrcode.min.js"></script>
+<script>
+    document.getElementById("generarQR").addEventListener("click", () => {
+        const duracion = parseInt(document.getElementById("qrDuracion").value);
+        const sessionId = "session_" + Date.now();
+        const exp = Math.floor(Date.now()/1000) + duracion*60;
+
+        const hostingURL = "https://TU_PROYECTO.vercel.app"; // Reemplaza con tu URL de Vercel
+        const urlQR = `${hostingURL}/asistencia.html?sessionId=${sessionId}&exp=${exp}`;
+
+        document.getElementById("qr").innerHTML = "";
+        new QRCode(document.getElementById("qr"), {
+            text: urlQR,
+            width: 200,
+            height: 200
+        });
+
+        alert(`QR generado. Vigencia: ${duracion} minutos.`);
+    });
+</script>
+</body>
+</html>
