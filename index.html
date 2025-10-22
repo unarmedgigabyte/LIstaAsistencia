@@ -19,7 +19,7 @@
         const sessionId = "session_" + Date.now();
         const exp = Math.floor(Date.now()/1000) + duracion*60;
 
-        const hostingURL = "https://TU_PROYECTO.vercel.app"; // Reemplaza con tu URL de Vercel
+        const hostingURL = "https://listaasistencia.vercel.app"; // Reemplaza con tu URL de Vercel
         const urlQR = `${hostingURL}/asistencia.html?sessionId=${sessionId}&exp=${exp}`;
 
         document.getElementById("qr").innerHTML = "";
