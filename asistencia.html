@@ -1,118 +1,186 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Registro de Asistencia</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>Registro de Asistencia</h1>
+<!-- HEADER: logos -->
+<header class="header">
+    <img src="Logos.png" alt="Marina" class="logo">
 
-<form id="asistenciaForm">
-    <label>Nombre:</label>
-    <input type="text" id="nombre" required>
+</header>
 
-    <label>Correo:</label>
-    <input type="email" id="correo" required>
+<!-- Encabezado central -->
+<section class="hero">
+    <h1>Registro de Asistencia</h1>
+    <p class="sub">Por favor complete sus datos y firme al final</p>
+</section>
 
-    <label>Empresa:</label>
-    <input type="text" id="empresa" required>
+<!-- FORMULARIO -->
+<main>
+    <form id="asistenciaForm" class="form-card">
+        <div class="field">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" required />
+        </div>
 
-    <label>Teléfono:</label>
-    <input type="tel" id="telefono" required>
+        <div class="field">
+            <label for="correo">Correo</label>
+            <input id="correo" name="correo" type="email" required />
+        </div>
 
-    <label>Firma:</label>
-    <canvas id="signature-pad" width="300" height="150" style="border:1px solid #000;"></canvas>
-    <div class="buttons">
-        <button type="button" id="clear">Borrar firma</button>
-        <button type="button" id="enviar">Registrar asistencia</button>
-    </div>
-</form>
+        <div class="field">
+            <label for="empresa">Empresa</label>
+            <input id="empresa" name="empresa" type="text" required />
+        </div>
 
+        <div class="field">
+            <label for="telefono">Teléfono</label>
+            <input id="telefono" name="telefono" type="tel" required />
+        </div>
+
+        <div class="field">
+            <label>Firma</label>
+            <canvas id="signature-pad" class="signature-pad"></canvas>
+            <div class="signature-controls">
+                <button type="button" id="clearBtn" class="btn btn-ghost">Borrar firma</button>
+                <small class="hint">Firma con dedo o mouse</small>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button id="submitBtn" type="button" class="btn">Registrar asistencia</button>
+        </div>
+
+        <p id="status" class="status" aria-live="polite"></p>
+    </form>
+</main>
+
+<!-- FOOTER: logo año de la mujer -->
+
+
+<!-- Librería SignaturePad -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+<!-- Supabase JS -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-    // 🔹 Configuración de Supabase (ya con tus datos reales)
+    // ========================
+    // CONFIGURACIÓN SUPABASE
+    // ========================
     const SUPABASE_URL = "https://kdacskidrbbqbstizekl.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkYWNza2lkcmJicWJzdGl6ZWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNTQ1NDIsImV4cCI6MjA3NjczMDU0Mn0.SqnbCRbwI4EWYp14VAF8HR5SmeaF4FNI5bUVOCuD0wM";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkYWNza2lkcmJicWJzdGl6ZWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNTQ1NDIsImV4cCI6MjA3NjczMDU0Mn0.SqnbCRbwI4EWYp14VAF8HR5cSmeaF4FNI5bUVOCuD0wM";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // ========================
+    // ELEMENTOS DOM
+    // ========================
     const canvas = document.getElementById("signature-pad");
-    const ctx = canvas.getContext("2d");
-    let drawing = false;
+    const clearBtn = document.getElementById("clearBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const statusEl = document.getElementById("status");
 
-    canvas.addEventListener("mousedown", () => drawing = true);
-    canvas.addEventListener("mouseup", () => drawing = false);
-    canvas.addEventListener("mousemove", dibujar);
-
-    canvas.addEventListener("touchstart", (e) => { drawing = true; e.preventDefault(); });
-    canvas.addEventListener("touchend", () => drawing = false);
-    canvas.addEventListener("touchmove", (e) => {
-        e.preventDefault();
-        const touch = e.touches[0];
-        dibujar({ clientX: touch.clientX, clientY: touch.clientY });
-    });
-
-    function dibujar(e) {
-        if (!drawing) return;
-        const rect = canvas.getBoundingClientRect();
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = "black";
-        ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+    // Ajustar tamaño del canvas para pantallas con devicePixelRatio
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        // mantener tamaño visual definido por CSS; recalcula pixeles reales
+        canvas.width = Math.floor(canvas.offsetWidth * ratio);
+        canvas.height = Math.floor(canvas.offsetHeight * ratio);
+        const ctx = canvas.getContext("2d");
+        ctx.scale(ratio, ratio);
     }
 
-    document.getElementById("clear").addEventListener("click", () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
+    // Iniciar SignaturePad
+    resizeCanvas();
+    const sigPad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)' });
+
+    window.addEventListener('resize', () => {
+        // al redimensionar se borra la firma para mantener escalado correcto
+        resizeCanvas();
+        sigPad.clear();
     });
 
-    document.getElementById("enviar").addEventListener("click", async () => {
-        const nombre = document.getElementById("nombre").value.trim();
-        const correo = document.getElementById("correo").value.trim();
-        const empresa = document.getElementById("empresa").value.trim();
-        const telefono = document.getElementById("telefono").value.trim();
-        const sessionId = new URLSearchParams(window.location.search).get("sessionId");
-
-        if (!nombre || !correo || !empresa || !telefono) {
-            alert("Por favor, completa todos los campos.");
-            return;
-        }
-
-        const dataURL = canvas.toDataURL("image/png");
-        const blob = await (await fetch(dataURL)).blob();
-
-        // 🔹 Subir firma
-        const nombreArchivo = `firmas/${Date.now()}_${nombre}.png`;
-        const { error: uploadError } = await supabase.storage
-            .from("firmas")
-            .upload(nombreArchivo, blob, { contentType: "image/png" });
-
-        if (uploadError) {
-            console.error("Error al subir firma:", uploadError);
-            alert("Error al guardar la firma.");
-            return;
-        }
-
-        const { data: publicUrlData } = supabase.storage.from("firmas").getPublicUrl(nombreArchivo);
-        const firma_url = publicUrlData.publicUrl;
-
-        // 🔹 Insertar registro en la tabla
-        const { error } = await supabase
-            .from("asistencias")
-            .insert([{ nombre, correo, empresa, telefono, firma_url, session_id: sessionId }]);
-
-        if (error) {
-            console.error("Error al guardar:", error);
-            alert("Error al registrar asistencia.");
-        } else {
-            alert("✅ Asistencia registrada correctamente.");
-            document.getElementById("asistenciaForm").reset();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+    clearBtn.addEventListener('click', () => {
+        sigPad.clear();
     });
+
+    // Obtener sessionId desde querystring si existe (opcional)
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('sessionId') || null;
+
+    // ========================
+    // Función principal: grabar firma -> storage -> insertar registro
+    // ========================
+    async function registrarAsistencia() {
+        statusEl.textContent = '';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registrando...';
+
+        try {
+            // Validaciones básicas
+            const nombre = document.getElementById('nombre').value.trim();
+            const correo = document.getElementById('correo').value.trim();
+            const empresa = document.getElementById('empresa').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+
+            if (!nombre || !correo || !empresa || !telefono) {
+                statusEl.textContent = 'Por favor completa todos los campos.';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Registrar asistencia';
+                return;
+            }
+
+            if (sigPad.isEmpty()) {
+                statusEl.textContent = 'Por favor firma antes de enviar.';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Registrar asistencia';
+                return;
+            }
+
+            // Convertir la firma a blob
+            const dataURL = sigPad.toDataURL('image/png');
+            const res = await fetch(dataURL);
+            const blob = await res.blob();
+
+            // Nombre de archivo único
+            const safeName = nombre.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+            const archivo = `firmas/${Date.now()}_${safeName}.png`;
+
+            // Subir a Supabase Storage (bucket 'firmas')
+            const { error: uploadError } = await supabase.storage
+                .from('firmas')
+                .upload(archivo, blob, { contentType: 'image/png' });
+
+            if (uploadError) throw uploadError;
+
+            // Obtener URL pública
+            const { data: publicUrlData } = supabase.storage.from('firmas').getPublicUrl(archivo);
+            const firma_url = publicUrlData.publicUrl || null;
+
+            // Insertar en la tabla 'asistencias'
+            const { error: insertError } = await supabase
+                .from('asistencias')
+                .insert([{ nombre, correo, empresa, telefono, firma_url, session_id: sessionId }]);
+
+            if (insertError) throw insertError;
+
+            statusEl.textContent = '✅ Asistencia registrada correctamente.';
+            // limpiar form
+            document.getElementById('asistenciaForm').reset();
+            sigPad.clear();
+        } catch (err) {
+            console.error('Error al subir firma / insertar registro:', err);
+            statusEl.textContent = '❌ Error al registrar asistencia. Revisa la consola.';
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Registrar asistencia';
+        }
+    }
+
+    submitBtn.addEventListener('click', registrarAsistencia);
 </script>
 </body>
 </html>
