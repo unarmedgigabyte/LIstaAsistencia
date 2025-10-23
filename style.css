@@ -23,15 +23,17 @@ body{
 }
 
 /* ========================================= */
-/* 2. HEADER: logos (Optimizado para Móvil) */
+/* 2. HEADER: logos (Optimizado para Móvil Extremo) */
 /* ========================================= */
 .header{
     display:flex;
     justify-content:center;
     flex-wrap: wrap;
-    gap:15px; /* Espaciado ajustado para móviles */
+    /* Espaciado mínimo en móvil para que quepan */
+    gap:8px;
     align-items:center;
-    padding:10px 10px; /* Padding reducido para móviles */
+    /* Padding mínimo en móvil */
+    padding:8px 8px;
     background:#fff;
     border-bottom: 1px solid rgba(0,0,0,0.04);
 }
@@ -40,6 +42,8 @@ body{
     height:auto;
     max-height:45px; /* Altura máxima clave para móviles */
     width:auto;
+    /* CLAVE: Limita el ancho de cada logo al 30% para garantizar que quepan 3 en pantallas pequeñas */
+    max-width: 30%;
     object-fit:contain;
 }
 
@@ -106,8 +110,7 @@ main{padding:18px 12px 40px}
     border:1px dashed rgba(0,0,0,0.15);
     background:white;
     display:block;
-    /* CLAVE para no interferir con el scroll del móvil/tablet: */
-    touch-action: none;
+    touch-action: none; /* Previene scroll en dispositivos táctiles al firmar */
 }
 
 .signature-controls{
@@ -199,11 +202,11 @@ main{padding:18px 12px 40px}
 
 
 /* ========================================= */
-/* 9. Media Query para Desktop/Tablet */
+/* 9. Media Query para Desktop/Tablet (min-width: 600px) */
 /* ========================================= */
 @media (min-width: 600px) {
 
-    /* Logos */
+    /* Logos: Restauramos el tamaño y espaciado para pantallas grandes */
     .header {
         padding: 18px 16px;
         gap: 28px;
@@ -211,6 +214,7 @@ main{padding:18px 12px 40px}
 
     .logo {
         max-height: 64px; /* Aumenta el tamaño para escritorio */
+        max-width: none; /* Quita la restricción del 30% */
     }
 
     /* Botones */
