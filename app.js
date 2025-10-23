@@ -33,15 +33,43 @@ function dibujar(e) {
     if (!dibujando) return;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "black";
     let x, y;
-    if (e.touches) { const t = e.touches[0]; x = t.clientX - canvas.offsetLeft; y = t.clientY - canvas.offsetTop; }
+    if (e.touches) {
+        const t = e.touches[0];
+        // Corregir cálculo de coordenadas para dispositivos táctiles
+        const rect = canvas.getBoundingClientRect();
+        x = t.clientX - rect.left;
+        y = t.clientY - rect.top;
+    }
     else { x = e.offsetX; y = e.offsetY; }
-    ctx.lineTo(x,y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x,y);
+
+    ctx.lineTo(x,y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x,y);
 }
 
 canvas.addEventListener("mousedown", ()=>dibujando=true);
 canvas.addEventListener("mouseup", ()=>{ dibujando=false; ctx.beginPath(); });
 canvas.addEventListener("mousemove", dibujar);
-canvas.addEventListener("touchstart", e=>{dibujando=true; dibujar(e);});
+
+// Listener de toque: SOLUCIÓN DE COMPATIBILIDAD IOS
+// Usamos { passive: false } en touchstart para que e.preventDefault() funcione en Safari/iOS antiguos
+try {
+    canvas.addEventListener("touchstart", e=>{
+        dibujando=true;
+        dibujar(e);
+        // CLAVE: Bloquea el scroll o zoom inicial del navegador
+        e.preventDefault();
+    }, { passive: false });
+} catch (e) {
+    // Fallback para navegadores que no soportan { passive: false }
+    canvas.addEventListener("touchstart", e=>{
+        dibujando=true;
+        dibujar(e);
+        e.preventDefault();
+    });
+}
+
 canvas.addEventListener("touchmove", e=>{dibujar(e); e.preventDefault();});
 canvas.addEventListener("touchend", ()=>{dibujando=false; ctx.beginPath();});
 document.getElementById("limpiarFirma").addEventListener("click", ()=>ctx.clearRect(0,0,canvas.width,canvas.height));
@@ -50,7 +78,9 @@ document.getElementById("limpiarFirma").addEventListener("click", ()=>ctx.clearR
 document.getElementById("asistenciaForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     if (Math.floor(Date.now()/1000) > exp){ alert("QR expirado"); return; }
-    if (ctx.getImageData(0,0,canvas.width,canvas.height).data.every(v=>v===0)){ alert("Dibuja tu firma"); return; }
+    // Corregir verificación de firma vacía
+    const isCanvasBlank = !ctx.getImageData(0, 0, canvas.width, canvas.height).data.some(channel => channel !== 0);
+    if (isCanvasBlank){ alert("Dibuja tu firma"); return; }
 
     const data = {
         session_id: sessionId,
@@ -91,7 +121,7 @@ function dataURLtoFile(dataurl, filename) {
     const mime = arr[0].match(/:(.*?);/)[1];
     const bstr = atob(arr[1]);
     let n = bstr.length;
-    const u8arr = new Uint8Array(n);
+    const u8arr = new Uint8array(n);
     while(n--) u8arr[n] = bstr.charCodeAt(n);
     return new File([u8arr], filename, { type: mime });
 }
