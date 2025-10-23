@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Generador de QR</title>
+    <title>Generador de QR - Lista de Asistencia</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,7 +19,8 @@
         const sessionId = "session_" + Date.now();
         const exp = Math.floor(Date.now()/1000) + duracion*60;
 
-        const hostingURL = "https://l-ista-asistencia.vercel.app"; // Reemplaza con tu URL de Vercel
+        // 🔹 URL pública de tu app en Vercel
+        const hostingURL = "https://l-ista-asistencia.vercel.app";
         const urlQR = `${hostingURL}/asistencia.html?sessionId=${sessionId}&exp=${exp}`;
 
         document.getElementById("qr").innerHTML = "";
@@ -29,7 +30,7 @@
             height: 200
         });
 
-        alert(`QR generado. Vigencia: ${duracion} minutos.`);
+        alert(`✅ QR generado con vigencia de ${duracion} minutos.`);
     });
 </script>
 </body>

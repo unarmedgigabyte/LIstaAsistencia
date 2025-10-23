@@ -1,6 +1,6 @@
 // ====== CONFIGURA ESTO ======
-const SUPABASE_URL = "https://abcd1234.supabase.co"; // tu URL de Supabase
-const SUPABASE_KEY = "tu-anon-key"; // tu anon key
+const SUPABASE_URL = "https://kdacskidrbbqbstizekl.supabase.co"; // tu URL de Supabase
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkYWNza2lkcmJicWJzdGl6ZWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNTQ1NDIsImV4cCI6MjA3NjczMDU0Mn0.SqnbCRbwI4EWYp14VAF8HR5SmeaF4FNI5bUVOCuD0wM"; // tu anon key
 // ============================
 
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
