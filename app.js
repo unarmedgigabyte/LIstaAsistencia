@@ -58,13 +58,12 @@ canvas.addEventListener("mousedown", ()=>dibujando=true);
 canvas.addEventListener("mouseup", ()=>{ dibujando=false; ctx.beginPath(); });
 canvas.addEventListener("mousemove", dibujar);
 
-// Eventos Táctiles (Optimización para iOS Antiguo)
+// Eventos Táctiles (SOLUCIÓN FINAL PARA IOS ANTIGUO)
 // 1. touchstart: Iniciamos el dibujo y prevenimos el comportamiento por defecto.
 canvas.addEventListener("touchstart", e=>{
     dibujando=true;
     dibujar(e);
-    // CLAVE: Prevenir el scroll/zoom.
-    // Debe ser llamado directamente aquí, el CSS 'touch-action: none' ayuda.
+    // CLAVE: Bloquear el scroll o zoom inicial del navegador.
     e.preventDefault();
 });
 
@@ -80,8 +79,18 @@ canvas.addEventListener("touchend", ()=>{
     ctx.beginPath();
 });
 
+// **NUEVA LÍNEA:** Prevención global para asegurar que el cuerpo no haga scroll
+// cuando se toca la pantalla (aumenta la compatibilidad con dispositivos viejos).
+document.body.addEventListener('touchstart', function(e) {
+    if (e.target === canvas) { // Solo si el toque empieza en el canvas
+        e.preventDefault();
+    }
+}, { passive: false });
+
+
 // Botón de limpieza
 document.getElementById("limpiarFirma").addEventListener("click", ()=>ctx.clearRect(0,0,canvas.width,canvas.height));
+
 // ===== Enviar asistencia =====
 document.getElementById("asistenciaForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
