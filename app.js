@@ -33,14 +33,19 @@ function dibujar(e) {
     if (!dibujando) return;
     ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "black";
     let x, y;
+
     if (e.touches) {
+        // Calcular coordenadas usando getBoundingClientRect() para responsividad
         const t = e.touches[0];
-        // Corregir cálculo de coordenadas para dispositivos táctiles
         const rect = canvas.getBoundingClientRect();
         x = t.clientX - rect.left;
         y = t.clientY - rect.top;
     }
-    else { x = e.offsetX; y = e.offsetY; }
+    else {
+        // Coordenadas para mouse
+        x = e.offsetX;
+        y = e.offsetY;
+    }
 
     ctx.lineTo(x,y);
     ctx.stroke();
@@ -48,32 +53,35 @@ function dibujar(e) {
     ctx.moveTo(x,y);
 }
 
+// Eventos de Mouse (funcionales en escritorio y simulados en tablets)
 canvas.addEventListener("mousedown", ()=>dibujando=true);
 canvas.addEventListener("mouseup", ()=>{ dibujando=false; ctx.beginPath(); });
 canvas.addEventListener("mousemove", dibujar);
 
-// Listener de toque: SOLUCIÓN DE COMPATIBILIDAD IOS
-// Usamos { passive: false } en touchstart para que e.preventDefault() funcione en Safari/iOS antiguos
-try {
-    canvas.addEventListener("touchstart", e=>{
-        dibujando=true;
-        dibujar(e);
-        // CLAVE: Bloquea el scroll o zoom inicial del navegador
-        e.preventDefault();
-    }, { passive: false });
-} catch (e) {
-    // Fallback para navegadores que no soportan { passive: false }
-    canvas.addEventListener("touchstart", e=>{
-        dibujando=true;
-        dibujar(e);
-        e.preventDefault();
-    });
-}
+// Eventos Táctiles (Optimización para iOS Antiguo)
+// 1. touchstart: Iniciamos el dibujo y prevenimos el comportamiento por defecto.
+canvas.addEventListener("touchstart", e=>{
+    dibujando=true;
+    dibujar(e);
+    // CLAVE: Prevenir el scroll/zoom.
+    // Debe ser llamado directamente aquí, el CSS 'touch-action: none' ayuda.
+    e.preventDefault();
+});
 
-canvas.addEventListener("touchmove", e=>{dibujar(e); e.preventDefault();});
-canvas.addEventListener("touchend", ()=>{dibujando=false; ctx.beginPath();});
+// 2. touchmove: Dibujamos y prevenimos el comportamiento por defecto.
+canvas.addEventListener("touchmove", e=>{
+    dibujar(e);
+    e.preventDefault();
+});
+
+// 3. touchend: Finalizamos el dibujo.
+canvas.addEventListener("touchend", ()=>{
+    dibujando=false;
+    ctx.beginPath();
+});
+
+// Botón de limpieza
 document.getElementById("limpiarFirma").addEventListener("click", ()=>ctx.clearRect(0,0,canvas.width,canvas.height));
-
 // ===== Enviar asistencia =====
 document.getElementById("asistenciaForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
