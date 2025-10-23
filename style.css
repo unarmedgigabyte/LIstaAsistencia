@@ -1,7 +1,7 @@
-/* style.css - estilo tipo briefing operativo, AJUSTE FINAL para Ancho de Logos */
+/* style.css - AJUSTE FINAL: UN SOLO LOGO RESPONSIVO */
 
 /* ========================================= */
-/* 1. Variables y Reset */
+/* 1. Variables y Reset (SIN CAMBIOS) */
 /* ========================================= */
 :root{
     --accent:#5b0d2e;
@@ -20,32 +20,32 @@ body{
     color:#222;
     line-height:1.4;
     -webkit-text-size-adjust: 100%;
-    /* CLAVE: Oculta el scroll horizontal que genera el logo desbordado */
     overflow-x: hidden;
 }
 
 /* ========================================= */
-/* 2. HEADER: logos (VISTA POR DEFECTO: SMARTPHONE) */
+/* 2. HEADER: logos (SOLUCIÓN UN SOLO LOGO) */
 /* ========================================= */
 .header{
     display:flex;
+    /* Centramos el contenido (el logo) */
     justify-content:center;
-    flex-wrap: wrap;
-    gap:8px;
+    /* No necesitamos flex-wrap */
+    flex-wrap: nowrap;
+    gap:0; /* No necesitamos gap */
     align-items:center;
-    padding:10px 8px;
+    padding:10px 16px; /* Padding cómodo */
     background:#fff;
     border-bottom: 1px solid rgba(0,0,0,0.04);
 }
 
 .logo{
     height:auto;
-    /* Altura más visible para smartphones */
-    max-height:60px;
+    /* Altura grande para que se vea bien en smartphone y iPad */
+    max-height:80px;
     width:auto;
-    /* CLAVE: LIMITACIÓN ESTRICTA DE ANCHO para garantizar que 3 logos quepan.
-       32% x 3 = 96% de ancho total, dejando espacio para gaps y padding. */
-    max-width: 32%;
+    /* CLAVE: Limita el ancho del logo al 85% para que se ajuste y no se desborde */
+    max-width: 85%;
     object-fit:contain;
 }
 
@@ -204,20 +204,18 @@ main{padding:18px 12px 40px}
 
 
 /* ========================================= */
-/* 9. Media Query para IPAD/Desktop (min-width: 600px) */
+/* 9. Media Query para Desktop (min-width: 600px) */
 /* ========================================= */
 @media (min-width: 600px) {
 
-    /* Logos: Restauramos el espaciado amplio, pero MANTENEMOS la limitación de ANCHO */
+    /* El logo ya está ajustado por defecto, solo aumentamos el padding y el tamaño máximo de altura. */
     .header {
         padding: 18px 16px;
-        gap: 28px;
     }
 
     .logo {
-        max-height: 64px;
-        /* MANTENEMOS la restricción de ancho para que no se desborden en iPad */
-        max-width: 70%;
+        max-height: 90px; /* Tamaño aún más grande para iPad/Desktop */
+        max-width: 75%; /* Ligeramente más estrecho para centrarlo mejor en pantallas muy anchas */
     }
 
     /* Botones */
