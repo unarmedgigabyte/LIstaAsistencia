@@ -1,4 +1,4 @@
-/* style.css - estilo tipo briefing operativo, optimizado para móviles y tablets */
+/* style.css - estilo tipo briefing operativo, ajustado para responsividad en todos los dispositivos */
 
 /* ========================================= */
 /* 1. Variables y Reset */
@@ -19,32 +19,35 @@ body{
     background:var(--page-bg);
     color:#222;
     line-height:1.4;
-    -webkit-text-size-adjust: 100%; /* Compatibilidad iOS */
+    -webkit-text-size-adjust: 100%;
+    /* CLAVE: Previene el desbordamiento si el contenido no cabe */
+    overflow-x: hidden;
 }
 
 /* ========================================= */
-/* 2. HEADER: logos (Optimización de Espaciado para más Tamaño) */
+/* 2. HEADER: logos (Ajuste Final de Tamaño y Espacio en Móvil) */
 /* ========================================= */
 .header{
     display:flex;
     justify-content:center;
+    /* CLAVE: Permite que los logos se apilen si son muy anchos */
     flex-wrap: wrap;
-    /* Espaciado mínimo para que el espacio horizontal sea casi todo para los logos */
-    gap:4px;
+    /* Espaciado ajustado para dejar espacio a los logos */
+    gap:8px;
     align-items:center;
     /* Padding mínimo */
-    padding:6px 4px;
+    padding:10px 8px;
     background:#fff;
     border-bottom: 1px solid rgba(0,0,0,0.04);
 }
 
 .logo{
     height:auto;
-    /* Aumento de la altura máxima a 60px para que sean más grandes y visibles */
-    max-height:60px;
+    /* CLAVE: Altura más segura para móviles (visible pero no desbordante) */
+    max-height:50px;
     width:auto;
-    /* CLAVE: Eliminamos la restricción del 30% para que usen su ancho natural */
-    max-width: none;
+    /* Limitación suave de ancho para que los tres quepan con seguridad, pero no tan pequeña */
+    max-width: 40%;
     object-fit:contain;
 }
 
@@ -93,7 +96,7 @@ main{padding:18px 12px 40px}
     margin-bottom:6px;
 }
 .field input{
-    width:100%; /* Responsivo */
+    width:100%;
     padding:10px 12px;
     border-radius:8px;
     border:1px solid #d7d7d7;
@@ -111,7 +114,7 @@ main{padding:18px 12px 40px}
     border:1px dashed rgba(0,0,0,0.15);
     background:white;
     display:block;
-    touch-action: none; /* Previene scroll en dispositivos táctiles al firmar */
+    touch-action: none;
 }
 
 .signature-controls{
@@ -143,7 +146,7 @@ main{padding:18px 12px 40px}
     border-radius:8px;
     font-weight:700;
     cursor:pointer;
-    width:100%; /* Full-width en móvil */
+    width:100%;
     transition: background-color 0.2s;
 }
 .btn:hover:not(:disabled) {
@@ -207,15 +210,15 @@ main{padding:18px 12px 40px}
 /* ========================================= */
 @media (min-width: 600px) {
 
-    /* Logos: Restauramos el espaciado amplio */
+    /* Logos: Restauramos el espaciado amplio y el tamaño grande en desktop */
     .header {
         padding: 18px 16px;
         gap: 28px;
     }
 
     .logo {
-        max-height: 64px; /* Aumenta ligeramente más el tamaño para escritorio */
-        max-width: none;
+        max-height: 64px;
+        max-width: none; /* Quitamos la restricción de ancho para que se vean grandes */
     }
 
     /* Botones */
