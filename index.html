@@ -8,8 +8,9 @@
 </head>
 <body>
 <header class="header">
-    <img src="Logos.png" alt="Marina" class="logo">
-
+    <img src="marina.png" alt="Marina" class="logo">
+    <img src="marina_grupo.png" alt="Grupo Aeroportuario" class="logo">
+    <img src="aicm.png" alt="AICM" class="logo">
 </header>
 
 <section class="hero">
@@ -41,9 +42,9 @@
 
         <div class="field">
             <label>Firma</label>
-            <canvas id="signature-pad" class="signature-pad" width="300" height="150" style="border:1px solid #ccc;"></canvas>
+            <canvas id="signature-pad" class="signature-pad" width="300" height="150"></canvas>
             <div class="signature-controls">
-                <button type="button" id="clearBtn" class="btn btn-ghost">Borrar firma</button>
+                <button type="button" id="clearBtn" class="btn-ghost">Borrar firma</button>
                 <small class="hint">Firma con dedo o mouse</small>
             </div>
         </div>
@@ -56,53 +57,58 @@
     </form>
 </main>
 
-
+<footer class="footer">
+    <img src="ano_mujer.png" alt="Año de la Mujer" class="logo-footer">
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
     // ========================
-    // CONFIGURACIÓN SUPABASE (igual que en ambos códigos)
+    // CONFIGURACIÓN SUPABASE (Reemplaza con tus llaves reales si cambian)
     // ========================
     const SUPABASE_URL = "https://kdacskidrbbqbstizekl.supabase.co";
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkYWNza2lkcmJicWJzdGl6ZWtsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjExNTQ1NDIsImV4cCI6MjA3NjczMDU0Mn0.SqnbCRbwI4EWYp14VAF8HR5SmeaF4FNI5bUVOCuD0wM";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ========================
-    // ELEMENTOS DOM
+    // ELEMENTOS DOM y SignaturePad
     // ========================
     const canvas = document.getElementById("signature-pad");
     const clearBtn = document.getElementById("clearBtn");
     const submitBtn = document.getElementById("submitBtn");
     const statusEl = document.getElementById("status");
+    let sigPad = null;
 
-    // Ajustar tamaño del canvas para pantallas con devicePixelRatio (Mejor práctica de SignaturePad)
+    // Ajustar tamaño del canvas para pantallas con devicePixelRatio (CLAVE para la calidad en tablets/smartphones)
     function resizeCanvas() {
-        // Guarda los datos de la firma si ya existe para restaurarlos después
+        // Guarda los datos de la firma antes de redimensionar
         const data = sigPad ? sigPad.toData() : [];
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
-        // Establece el ancho y alto interno del canvas
+
+        // Establece el ancho y alto interno del canvas basado en el tamaño visual (CSS)
         canvas.width = Math.floor(canvas.offsetWidth * ratio);
         canvas.height = Math.floor(canvas.offsetHeight * ratio);
-        const ctx = canvas.getContext("2d");
-        // Escala el contexto para alta densidad de píxeles
-        ctx.scale(ratio, ratio);
-        // Restaura la firma
-        sigPad.fromData(data);
-        sigPad.clear(); // Limpiar el canvas para evitar problemas de escalado con el borde
+
+        // Escala el contexto y recarga la firma
+        if (sigPad) {
+            const ctx = canvas.getContext("2d");
+            ctx.scale(ratio, ratio);
+            sigPad.fromData(data);
+            if (data.length === 0) sigPad.clear(); // Limpia si estaba vacía
+        }
     }
 
-    // Iniciar SignaturePad
-    // Se inicializa primero y luego se redimensiona
-    const sigPad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)' });
-    resizeCanvas();
-
-    window.addEventListener('resize', () => {
-        // al redimensionar se redibuja el canvas
-        resizeCanvas();
+    // Inicialización
+    sigPad = new SignaturePad(canvas, {
+        backgroundColor: 'rgb(255,255,255)',
+        penColor: 'rgb(0, 0, 0)' // Asegura color de trazo negro
     });
+    resizeCanvas(); // Llamada inicial
 
+    // Event Listeners
+    window.addEventListener('resize', resizeCanvas); // Adaptación al girar/cambiar tamaño
     clearBtn.addEventListener('click', () => {
         sigPad.clear();
     });
@@ -112,7 +118,7 @@
     const sessionId = urlParams.get('sessionId') || null;
 
     // ========================
-    // Función principal: grabar firma -> storage -> insertar registro (Lógica robusta del Código 2)
+    // FUNCIÓN PRINCIPAL: Registrar Asistencia
     // ========================
     async function registrarAsistencia() {
         statusEl.textContent = '';
@@ -120,43 +126,42 @@
         submitBtn.textContent = 'Registrando...';
 
         try {
-            // Validaciones
+            // 1. Validaciones
             const nombre = document.getElementById('nombre').value.trim();
             const correo = document.getElementById('correo').value.trim();
             const empresa = document.getElementById('empresa').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
 
             if (!nombre || !correo || !empresa || !telefono) {
-                statusEl.textContent = '⚠️ Por favor completa todos los campos.';
-                return; // El finally se encarga de re-habilitar el botón
+                statusEl.textContent = '⚠️ Por favor, completa todos los campos.';
+                return;
             }
 
             if (sigPad.isEmpty()) {
-                statusEl.textContent = '⚠️ Por favor firma antes de enviar.';
-                return; // El finally se encarga de re-habilitar el botón
+                statusEl.textContent = '⚠️ Por favor, firma antes de enviar.';
+                return;
             }
 
-            // 1. Convertir la firma a blob (Usando la API de SignaturePad)
+            // 2. Convertir la firma a blob
             const dataURL = sigPad.toDataURL('image/png');
             const res = await fetch(dataURL);
             const blob = await res.blob();
 
-            // Nombre de archivo único
+            // 3. Subir a Supabase Storage
             const safeName = nombre.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
             const archivo = `firmas/${Date.now()}_${safeName}.png`;
 
-            // 2. Subir a Supabase Storage
             const { error: uploadError } = await supabase.storage
                 .from('firmas')
                 .upload(archivo, blob, { contentType: 'image/png' });
 
             if (uploadError) throw uploadError;
 
-            // 3. Obtener URL pública
+            // 4. Obtener URL pública
             const { data: publicUrlData } = supabase.storage.from('firmas').getPublicUrl(archivo);
             const firma_url = publicUrlData.publicUrl;
 
-            // 4. Insertar en la tabla 'asistencias'
+            // 5. Insertar en la tabla 'asistencias'
             const { error: insertError } = await supabase
                 .from('asistencias')
                 .insert([{ nombre, correo, empresa, telefono, firma_url, session_id: sessionId }]);
@@ -171,6 +176,7 @@
             console.error('Error al subir firma / insertar registro:', err);
             statusEl.textContent = '❌ Error al registrar asistencia. Revisa la consola.';
         } finally {
+            // Se ejecuta siempre, asegurando que el botón se re-habilite
             submitBtn.disabled = false;
             submitBtn.textContent = 'Registrar asistencia';
         }
