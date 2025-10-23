@@ -217,7 +217,7 @@ main{padding:18px 12px 40px}
     .logo {
         max-height: 64px;
         /* MANTENEMOS la restricción de ancho para que no se desborden en iPad */
-        max-width: 40%;
+        max-width: 70%;
     }
 
     /* Botones */
