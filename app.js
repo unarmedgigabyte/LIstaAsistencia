@@ -21,83 +21,66 @@ if (!sessionId || !exp) {
     document.getElementById("asistenciaForm").style.display = "none";
 }
 
-document.getElementById("sessionId").value = sessionId;
-document.getElementById("exp").value = exp;
+// Nota: Asumo que tienes campos ocultos con estos IDs en tu HTML
+// document.getElementById("sessionId").value = sessionId;
+// document.getElementById("exp").value = exp;
 
-// ===== Canvas firma =====
-const canvas = document.getElementById("firma");
-const ctx = canvas.getContext("2d");
-let dibujando = false;
+// ===== Canvas firma (Implementación con SignaturePad) =====
+const canvas = document.getElementById("signature-pad");
 
-function dibujar(e) {
-    if (!dibujando) return;
-    ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "black";
-    let x, y;
+// Función de redimensionamiento (CLAVE para la calidad en dispositivos de alta densidad)
+function resizeCanvas() {
+    // Guarda los datos antes de redimensionar
+    const data = sigPad ? sigPad.toData() : [];
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
 
-    if (e.touches) {
-        // Calcular coordenadas usando getBoundingClientRect() para responsividad
-        const t = e.touches[0];
-        const rect = canvas.getBoundingClientRect();
-        x = t.clientX - rect.left;
-        y = t.clientY - rect.top;
+    // Establece el ancho y alto interno del canvas basado en el tamaño visual (CSS)
+    canvas.width = Math.floor(canvas.offsetWidth * ratio);
+    canvas.height = Math.floor(canvas.offsetHeight * ratio);
+
+    if (sigPad) {
+        const ctx = canvas.getContext("2d");
+        ctx.scale(ratio, ratio);
+        sigPad.fromData(data); // Restaura la firma
     }
-    else {
-        // Coordenadas para mouse
-        x = e.offsetX;
-        y = e.offsetY;
-    }
-
-    ctx.lineTo(x,y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x,y);
 }
 
-// Eventos de Mouse (funcionales en escritorio y simulados en tablets)
-canvas.addEventListener("mousedown", ()=>dibujando=true);
-canvas.addEventListener("mouseup", ()=>{ dibujando=false; ctx.beginPath(); });
-canvas.addEventListener("mousemove", dibujar);
-
-// Eventos Táctiles (SOLUCIÓN FINAL PARA IOS ANTIGUO)
-// 1. touchstart: Iniciamos el dibujo y prevenimos el comportamiento por defecto.
-canvas.addEventListener("touchstart", e=>{
-    dibujando=true;
-    dibujar(e);
-    // CLAVE: Bloquear el scroll o zoom inicial del navegador.
-    e.preventDefault();
+// Inicializar SignaturePad (Esta librería es mejor para compatibilidad táctil)
+const sigPad = new SignaturePad(canvas, {
+    backgroundColor: 'rgb(255,255,255)',
+    penColor: 'rgb(0, 0, 0)'
 });
 
-// 2. touchmove: Dibujamos y prevenimos el comportamiento por defecto.
-canvas.addEventListener("touchmove", e=>{
-    dibujar(e);
-    e.preventDefault();
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas); // Adaptación al girar/cambiar tamaño
+
+// Limpiar firma (Asumo el ID del botón es 'clearBtn' del Código 2)
+document.getElementById("clearBtn").addEventListener("click", () => {
+    sigPad.clear();
 });
 
-// 3. touchend: Finalizamos el dibujo.
-canvas.addEventListener("touchend", ()=>{
-    dibujando=false;
-    ctx.beginPath();
-});
+// Forzar Prevención de Scroll/Zoom en iOS Antiguo (Doble seguridad)
+try {
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.target === canvas) e.preventDefault();
+    }, { passive: false });
+} catch (e) {
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.target === canvas) e.preventDefault();
+    });
+}
 
-// **NUEVA LÍNEA:** Prevención global para asegurar que el cuerpo no haga scroll
-// cuando se toca la pantalla (aumenta la compatibilidad con dispositivos viejos).
-document.body.addEventListener('touchstart', function(e) {
-    if (e.target === canvas) { // Solo si el toque empieza en el canvas
-        e.preventDefault();
-    }
-}, { passive: false });
-
-
-// Botón de limpieza
-document.getElementById("limpiarFirma").addEventListener("click", ()=>ctx.clearRect(0,0,canvas.width,canvas.height));
-
-// ===== Enviar asistencia =====
+// ===== Enviar asistencia (Adaptado para usar SignaturePad) =====
 document.getElementById("asistenciaForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
+
     if (Math.floor(Date.now()/1000) > exp){ alert("QR expirado"); return; }
-    // Corregir verificación de firma vacía
-    const isCanvasBlank = !ctx.getImageData(0, 0, canvas.width, canvas.height).data.some(channel => channel !== 0);
-    if (isCanvasBlank){ alert("Dibuja tu firma"); return; }
+
+    // Verificación de firma vacía con SignaturePad
+    if (sigPad.isEmpty()){
+        alert("Dibuja tu firma");
+        return;
+    }
 
     const data = {
         session_id: sessionId,
@@ -107,38 +90,42 @@ document.getElementById("asistenciaForm").addEventListener("submit", async (e)=>
         telefono: document.getElementById("telefono").value.trim()
     };
 
+    // Deshabilitar botón y mostrar estado si lo tienes en el HTML
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Registrando...'; }
+
+
     try{
-        const firmaBase64 = canvas.toDataURL("image/png");
+        // Obtener Base64 desde SignaturePad
+        const firmaBase64 = sigPad.toDataURL("image/png");
+
         // Subir firma
         const fileName = `firmas/${data.nombre}_${Date.now()}.png`;
+
+        // Usamos fetch/blob para subir a Supabase, que es más moderno y robusto
+        const blob = await (await fetch(firmaBase64)).blob();
+
         const { error: uploadError } = await supabase.storage
             .from('firmas')
-            .upload(fileName, dataURLtoFile(firmaBase64, fileName), { upsert: true });
+            .upload(fileName, blob, { contentType: 'image/png', upsert: true });
         if(uploadError) throw uploadError;
 
-        const { publicUrl } = supabase.storage.from('firmas').getPublicUrl(fileName);
-        data.firma_url = publicUrl;
+        const { data: publicUrlData } = supabase.storage.from('firmas').getPublicUrl(fileName);
+        data.firma_url = publicUrlData.publicUrl;
 
         // Insertar en tabla
         const { error: insertError } = await supabase.from('asistencias').insert([data]);
         if(insertError) throw insertError;
 
         document.getElementById("asistenciaForm").reset();
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        alert("Asistencia registrada correctamente.");
+        sigPad.clear(); // Limpiar con la función de SignaturePad
+        alert("✅ Asistencia registrada correctamente.");
+
     } catch(e){
         console.error(e);
-        alert("Error al registrar asistencia");
+        alert("❌ Error al registrar asistencia");
+    } finally {
+        // Restaurar botón
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Registrar asistencia'; }
     }
 });
-
-// Convierte base64 a File
-function dataURLtoFile(dataurl, filename) {
-    const arr = dataurl.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8array(n);
-    while(n--) u8arr[n] = bstr.charCodeAt(n);
-    return new File([u8arr], filename, { type: mime });
-}
