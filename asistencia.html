@@ -5,28 +5,123 @@
     <title>Registro de Asistencia</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        canvas { border:1px solid #000; display:block; margin:10px 0; touch-action:none; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background: #f9f9f9;
+        }
+
+        form {
+            max-width: 400px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        input, button {
+            width: 100%;
+            padding: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        canvas {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            height: 150px;
+            background: #fff;
+            touch-action: none; /* necesario para móvil */
+        }
+
+        #borrarFirma {
+            background-color: #f44336;
+            color: white;
+        }
     </style>
 </head>
 <body>
-<h1>Registro de Asistencia</h1>
-
+<h2>Registro de Asistencia</h2>
 <form id="asistenciaForm">
-    <input type="hidden" id="sessionId">
-    <input type="hidden" id="exp">
-    <input type="text" id="nombre" placeholder="Nombre" required><br>
-    <input type="email" id="correo" placeholder="Correo" required><br>
-    <input type="text" id="empresa" placeholder="Empresa" required><br>
-    <input type="tel" id="telefono" placeholder="Teléfono" required><br>
+    <label>Nombre:</label>
+    <input type="text" id="nombre" required>
 
-    <p>Firma:</p>
-    <canvas id="firma" width="300" height="150"></canvas>
-    <button type="button" id="limpiarFirma">Limpiar Firma</button><br>
+    <label>Correo:</label>
+    <input type="email" id="correo" required>
 
-    <button type="submit">Enviar Asistencia</button>
+    <label>Empresa:</label>
+    <input type="text" id="empresa" required>
+
+    <label>Teléfono:</label>
+    <input type="tel" id="telefono" required>
+
+    <label>Firma:</label>
+    <canvas id="canvas"></canvas>
+    <button type="button" id="borrarFirma">Borrar firma</button>
+
+    <button type="submit">Enviar asistencia</button>
 </form>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.28.0/dist/supabase.min.js"></script>
-<script src="app.js"></script>
+<!-- Librería para la firma -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+    // Configura tu conexión a Supabase
+    const SUPABASE_URL = "https://TU_PROYECTO.supabase.co";
+    const SUPABASE_KEY = "TU_API_KEY_PUBLICA";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Inicializar firma
+    const canvas = document.getElementById('canvas');
+    const signaturePad = new SignaturePad(canvas, {
+        backgroundColor: 'rgb(255, 255, 255)'
+    });
+
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        canvas.getContext("2d").scale(ratio, ratio);
+        signaturePad.clear();
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    document.getElementById("borrarFirma").addEventListener("click", () => signaturePad.clear());
+
+    // Guardar datos en Supabase
+    document.getElementById("asistenciaForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (signaturePad.isEmpty()) {
+            alert("Por favor, firma antes de enviar.");
+            return;
+        }
+
+        const nombre = document.getElementById("nombre").value;
+        const correo = document.getElementById("correo").value;
+        const empresa = document.getElementById("empresa").value;
+        const telefono = document.getElementById("telefono").value;
+        const firmaDataURL = signaturePad.toDataURL();
+
+        const { error } = await supabase
+            .from("asistencias")
+            .insert([{ nombre, correo, empresa, telefono, firma: firmaDataURL }]);
+
+        if (error) {
+            console.error("Error al guardar:", error);
+            alert("❌ Error al registrar asistencia.");
+        } else {
+            alert("✅ Asistencia registrada correctamente.");
+            document.getElementById("asistenciaForm").reset();
+            signaturePad.clear();
+        }
+    });
+</script>
 </body>
 </html>
