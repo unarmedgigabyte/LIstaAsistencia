@@ -1,4 +1,4 @@
-/* style.css - estilo tipo briefing operativo, AJUSTE FINAL RESPONSIVO */
+/* style.css - estilo tipo briefing operativo, AJUSTE FINAL para Ancho de Logos */
 
 /* ========================================= */
 /* 1. Variables y Reset */
@@ -20,7 +20,7 @@ body{
     color:#222;
     line-height:1.4;
     -webkit-text-size-adjust: 100%;
-    /* Oculta el scroll horizontal que genera el logo desbordado */
+    /* CLAVE: Oculta el scroll horizontal que genera el logo desbordado */
     overflow-x: hidden;
 }
 
@@ -30,9 +30,8 @@ body{
 .header{
     display:flex;
     justify-content:center;
-    /* Mantiene el apilamiento si el ancho es muy grande */
     flex-wrap: wrap;
-    gap:10px; /* Aumentamos ligeramente el espacio en móvil */
+    gap:8px;
     align-items:center;
     padding:10px 8px;
     background:#fff;
@@ -41,11 +40,12 @@ body{
 
 .logo{
     height:auto;
-    /* CLAVE: Aumentamos la altura del logo en el default (smartphone) para que se vea bien */
+    /* Altura más visible para smartphones */
     max-height:60px;
     width:auto;
-    /* Quitamos la restricción de max-width para que sea lo más grande posible sin desbordar el contenedor */
-    max-width: none;
+    /* CLAVE: LIMITACIÓN ESTRICTA DE ANCHO para garantizar que 3 logos quepan.
+       32% x 3 = 96% de ancho total, dejando espacio para gaps y padding. */
+    max-width: 32%;
     object-fit:contain;
 }
 
@@ -208,16 +208,16 @@ main{padding:18px 12px 40px}
 /* ========================================= */
 @media (min-width: 600px) {
 
-    /* Logos: Restauramos el espaciado y el tamaño para iPad/Desktop */
+    /* Logos: Restauramos el espaciado amplio, pero MANTENEMOS la limitación de ANCHO */
     .header {
         padding: 18px 16px;
         gap: 28px;
     }
 
     .logo {
-        /* Tamaño ligeramente más grande para iPad/Desktop */
-        max-height: 70px;
-        max-width: none;
+        max-height: 64px;
+        /* MANTENEMOS la restricción de ancho para que no se desborden en iPad */
+        max-width: 32%;
     }
 
     /* Botones */
