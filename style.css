@@ -1,4 +1,4 @@
-/* style.css - estilo tipo briefing operativo, ajustado para responsividad en todos los dispositivos */
+/* style.css - estilo tipo briefing operativo, AJUSTE FINAL para iOS/iPad */
 
 /* ========================================= */
 /* 1. Variables y Reset */
@@ -20,34 +20,33 @@ body{
     color:#222;
     line-height:1.4;
     -webkit-text-size-adjust: 100%;
-    /* CLAVE: Previene el desbordamiento si el contenido no cabe */
+    /* CLAVE: Oculta el scroll horizontal que genera el logo desbordado */
     overflow-x: hidden;
 }
 
 /* ========================================= */
-/* 2. HEADER: logos (Ajuste Final de Tamaño y Espacio en Móvil) */
+/* 2. HEADER: logos (SOLUCIÓN DE AJUSTE) */
 /* ========================================= */
 .header{
     display:flex;
     justify-content:center;
-    /* CLAVE: Permite que los logos se apilen si son muy anchos */
     flex-wrap: wrap;
-    /* Espaciado ajustado para dejar espacio a los logos */
-    gap:8px;
+    /* Espaciado mínimo */
+    gap:4px;
     align-items:center;
     /* Padding mínimo */
-    padding:10px 8px;
+    padding:6px 4px;
     background:#fff;
     border-bottom: 1px solid rgba(0,0,0,0.04);
 }
 
 .logo{
     height:auto;
-    /* CLAVE: Altura más segura para móviles (visible pero no desbordante) */
-    max-height:50px;
+    /* Altura más baja para que el header sea compacto */
+    max-height:45px;
     width:auto;
-    /* Limitación suave de ancho para que los tres quepan con seguridad, pero no tan pequeña */
-    max-width: 40%;
+    /* CLAVE: Máximo 30% del ancho para asegurar que 3 logos quepan en el móvil más estrecho */
+    max-width: 30%;
     object-fit:contain;
 }
 
@@ -114,6 +113,7 @@ main{padding:18px 12px 40px}
     border:1px dashed rgba(0,0,0,0.15);
     background:white;
     display:block;
+    /* Necesario para iOS */
     touch-action: none;
 }
 
