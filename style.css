@@ -1,4 +1,8 @@
-/* style.css - estilo tipo briefing operativo */
+/* style.css - estilo tipo briefing operativo, modificado para responsividad */
+
+/* ========================================= */
+/* 1. Variables y Reset */
+/* ========================================= */
 :root{
     --accent:#5b0d2e; /* tono vino del ejemplo */
     --muted:#6b6b6b;
@@ -6,31 +10,44 @@
     --page-bg:#f7f8fa;
 }
 
-*{box-sizing:border-box}
+*{
+    box-sizing:border-box;
+    /* Reset básico para asegurar que padding y border estén dentro del ancho/alto */
+}
 body{
     margin:0;
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
     background:var(--page-bg);
     color:#222;
+    line-height:1.4; /* Ajuste para mejor lectura */
+    -webkit-text-size-adjust: 100%; /* Evita que Safari en iOS cambie el tamaño de fuente */
 }
 
-/* HEADER: logos */
+/* ========================================= */
+/* 2. HEADER: logos (Responsivo con Flexbox) */
+/* ========================================= */
 .header{
     display:flex;
     justify-content:center;
-    gap:28px;
+    /* En móvil, usamos wrap para que los logos bajen si no caben */
+    flex-wrap: wrap;
+    gap:20px; /* Reducido ligeramente para móvil */
     align-items:center;
-    padding:18px 16px;
+    padding:14px 16px; /* Ajuste de padding */
     background:#fff;
     border-bottom: 1px solid rgba(0,0,0,0.04);
 }
 
 .logo{
-    height:64px;
+    height:50px; /* Tamaño ligeramente reducido para mejor ajuste en móvil */
+    max-height: 64px;
+    width:auto;
     object-fit:contain;
 }
 
-/* HERO */
+/* ========================================= */
+/* 3. HERO Section */
+/* ========================================= */
 .hero{
     text-align:center;
     padding:22px 16px;
@@ -48,10 +65,13 @@ body{
     font-size:13px;
 }
 
-/* FORM CARD */
+/* ========================================= */
+/* 4. FORMULARIO Y CAMPOS */
+/* ========================================= */
 main{padding:18px 12px 40px}
 .form-card{
-    max-width:520px;
+    max-width:520px; /* Mantiene el límite de ancho */
+    width: 100%; /* Asegura que ocupe el ancho disponible en móvil */
     margin:18px auto;
     background:var(--card-bg);
     padding:22px;
@@ -70,34 +90,50 @@ main{padding:18px 12px 40px}
     margin-bottom:6px;
 }
 .field input{
-    width:100%;
+    width:100%; /* Esencial para responsividad */
     padding:10px 12px;
     border-radius:8px;
     border:1px solid #d7d7d7;
     font-size:14px;
 }
 
-/* Canvas signature */
+/* ========================================= */
+/* 5. Canvas de Firma y Controles */
+/* ========================================= */
 .signature-pad{
-    width:100%;
+    width:100%; /* Esencial: Ocupa todo el ancho del contenedor */
+    max-width: 476px; /* Opcional: Límite para que no se vea gigantesco en desktop/tablet */
     height:160px;
     border-radius:6px;
     border:1px dashed rgba(0,0,0,0.15);
     background:white;
     display:block;
+    /* Clave para la firma en dispositivos táctiles: */
+    touch-action: none;
 }
 
-/* signature controls */
 .signature-controls{
     display:flex;
     align-items:center;
     gap:12px;
     margin-top:8px;
+    /* Aseguramos que los controles no interfieran con la firma */
+    user-select: none;
 }
-.hint{ color:var(--muted); font-size:12px; margin-left:auto; }
+.hint{
+    color:var(--muted);
+    font-size:12px;
+    margin-left:auto;
+    white-space: nowrap; /* Evita que la pista se rompa en varias líneas */
+}
 
-/* buttons */
-.actions{ text-align:center; margin-top:14px; }
+/* ========================================= */
+/* 6. Botones y Acciones */
+/* ========================================= */
+.actions{
+    text-align:center;
+    margin-top:20px; /* Aumento de margen superior */
+}
 .btn{
     background:var(--accent);
     color:white;
@@ -106,18 +142,83 @@ main{padding:18px 12px 40px}
     border-radius:8px;
     font-weight:700;
     cursor:pointer;
+    width:100%; /* Clave: Full-width en móvil */
+    transition: background-color 0.2s;
 }
+.btn:hover:not(:disabled) {
+    background-color: #7a153f; /* Tono más oscuro al pasar el ratón */
+}
+.btn:disabled{
+    background-color: #d7d7d7;
+    color: #999;
+    cursor: not-allowed;
+}
+
 .btn-ghost{
     background:#fff;
     border:1px solid #d7d7d7;
     color:#333;
     padding:8px 12px;
     border-radius:8px;
+    /* El botón 'Borrar firma' no necesita ser 100% ancho */
+    width: auto;
+    font-weight:600;
+    transition: background-color 0.2s;
+}
+.btn-ghost:hover {
+    background-color: var(--page-bg);
 }
 
-/* footer */
+/* ========================================= */
+/* 7. Footer */
+/* ========================================= */
+.footer {
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+    /* Manteniendo la estructura del Código 2 */
+}
+.logo-footer {
+    max-height: 70px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* ========================================= */
+/* 8. Estado y Mensajes */
+/* ========================================= */
+.status{
+    display:block;
+    margin-top:12px;
+    color:#333;
+    font-weight:600;
+    text-align:center;
+    padding: 10px;
+    border-radius: 6px;
+}
+/* Estilo visual para cuando el elemento de estado tiene contenido */
+.status:not(:empty) {
+    background-color: #fff3cd; /* Fondo amarillo suave para mensajes */
+    border: 1px solid #ffe0a3;
+    color: #664d03;
+}
 
 
+/* ========================================= */
+/* 9. Media Query para Desktop/Tablet (Optimización) */
+/* ========================================= */
+@media (min-width: 600px) {
 
-/* status text */
-.status{ display:block; margin-top:12px; color:#333; font-weight:600; text-align:center; }
+    /* El formulario ya está centrado y con max-width en desktop */
+
+    .btn {
+        /* En pantallas más grandes, el botón principal ocupa menos espacio */
+        width: auto;
+        min-width: 250px;
+    }
+
+    .header {
+        /* Un poco más de espacio entre logos en pantallas grandes */
+        gap: 28px;
+    }
+}
